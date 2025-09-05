@@ -5,6 +5,8 @@ using SOLID.OCP.Violation;
 using SOLID.OCP.Solution;
 using SOLID.LSP.Violation;
 using SOLID.LSP.Solution;
+using SOLID.ISP.Violation;
+using SOLID.ISP.Solution;
 
 namespace SOLID
 {
@@ -25,6 +27,10 @@ namespace SOLID
             Console.WriteLine("\n\n3. LSP - Liskov Substitution Principle");
             Console.WriteLine("=======================================");
             DemonstrateLSP();
+
+            Console.WriteLine("\n\n4. ISP - Interface Segregation Principle");
+            Console.WriteLine("=========================================");
+            DemonstrateISP();
 
             Console.WriteLine("\nPressione qualquer tecla para sair...");
             Console.ReadKey();
@@ -145,6 +151,75 @@ namespace SOLID
             processadorSolucao.ProcessarSaque(contaInvestimento, 150m);
             
             Console.WriteLine("VANTAGEM: Qualquer subclasse substitui a classe pai perfeitamente!");
+        }
+
+        static void DemonstrateISP()
+        {
+            Console.WriteLine("\n--- VIOLAÇÃO DO ISP ---");
+            
+            Console.WriteLine("ContaCorrente forçada a implementar métodos de investimento e poupança:");
+            var contaCorrenteViolacao = new SOLID.ISP.Violation.ContaCorrente();
+            contaCorrenteViolacao.Depositar(1000m);
+            
+            try
+            {
+                // Tentando usar método que não faz sentido para conta corrente
+                contaCorrenteViolacao.InvestirEmAcoes(500m);
+            }
+            catch (NotImplementedException ex)
+            {
+                Console.WriteLine("ERRO: " + ex.Message);
+            }
+
+            Console.WriteLine("\nContaPoupanca forçada a implementar métodos de empréstimo e investimento:");
+            var contaPoupancaViolacao = new SOLID.ISP.Violation.ContaPoupanca();
+            contaPoupancaViolacao.Depositar(1000m);
+            
+            try
+            {
+                // Tentando usar método que não faz sentido para poupança
+                contaPoupancaViolacao.SolicitarEmprestimo(2000m);
+            }
+            catch (NotImplementedException ex)
+            {
+                Console.WriteLine("ERRO: " + ex.Message);
+            }
+            Console.WriteLine("PROBLEMA: Interface gigante força implementação de métodos inúteis!");
+
+            Console.WriteLine("\n--- SOLUÇÃO DO ISP ---");
+            Console.WriteLine("Cada classe implementa apenas o que precisa:");
+            
+            // Conta Corrente - só operações básicas e empréstimo
+            var contaCorrente = new SOLID.ISP.Solution.ContaCorrente();
+            contaCorrente.Depositar(1000m);
+            Console.WriteLine($"Conta Corrente - Saldo: R$ {contaCorrente.ConsultarSaldo():F2}");
+            contaCorrente.SolicitarEmprestimo(5000m);
+            Console.WriteLine($"Limite: R$ {contaCorrente.ConsultarLimiteEmprestimo():F2}");
+            
+            // Conta Poupança - só operações básicas e poupança
+            var contaPoupanca = new SOLID.ISP.Solution.ContaPoupanca();
+            contaPoupanca.Depositar(2000m);
+            Console.WriteLine($"\nConta Poupança - Saldo: R$ {contaPoupanca.ConsultarSaldo():F2}");
+            contaPoupanca.CalcularRendimentoPoupanca();
+            Console.WriteLine($"Aniversário: {contaPoupanca.ConsultarAniversarioPoupanca():dd/MM/yyyy}");
+            
+            // Conta Investimento - só operações básicas e investimento
+            var contaInvestimento = new SOLID.ISP.Solution.ContaInvestimento();
+            contaInvestimento.Depositar(5000m);
+            Console.WriteLine($"\nConta Investimento - Saldo: R$ {contaInvestimento.ConsultarSaldo():F2}");
+            contaInvestimento.InvestirEmAcoes(1000m);
+            contaInvestimento.InvestirEmFundos(500m);
+            Console.WriteLine($"Rendimento: R$ {contaInvestimento.ConsultarRendimento():F2}");
+            
+            // Conta Completa - implementa todas as interfaces (opcionalmente)
+            var contaCompleta = new SOLID.ISP.Solution.ContaCompleta();
+            contaCompleta.Depositar(10000m);
+            Console.WriteLine($"\nConta Completa - Saldo: R$ {contaCompleta.ConsultarSaldo():F2}");
+            contaCompleta.SolicitarEmprestimo(3000m);
+            contaCompleta.InvestirEmAcoes(2000m);
+            contaCompleta.CalcularRendimentoPoupanca();
+            
+            Console.WriteLine("VANTAGEM: Cada classe só implementa métodos que realmente usa!");
         }
     }
 }
