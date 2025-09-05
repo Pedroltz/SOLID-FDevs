@@ -3,6 +3,8 @@ using SOLID.SRP.Violation;
 using SOLID.SRP.Solution;
 using SOLID.OCP.Violation;
 using SOLID.OCP.Solution;
+using SOLID.LSP.Violation;
+using SOLID.LSP.Solution;
 
 namespace SOLID
 {
@@ -19,6 +21,10 @@ namespace SOLID
             Console.WriteLine("\n\n2. OCP - Open/Closed Principle");
             Console.WriteLine("===============================");
             DemonstrateOCP();
+
+            Console.WriteLine("\n\n3. LSP - Liskov Substitution Principle");
+            Console.WriteLine("=======================================");
+            DemonstrateLSP();
 
             Console.WriteLine("\nPressione qualquer tecla para sair...");
             Console.ReadKey();
@@ -78,6 +84,67 @@ namespace SOLID
             Console.WriteLine($"VIP - Final: R$ {processador.CalcularValorFinal(valor, vip):F2}");
             Console.WriteLine($"Empresarial - Final: R$ {processador.CalcularValorFinal(valor, empresarial):F2}");
             Console.WriteLine("VANTAGEM: Novo tipo sem modificar código existente!");
+        }
+
+        static void DemonstrateLSP()
+        {
+            Console.WriteLine("\n--- VIOLAÇÃO DO LSP ---");
+            var processadorViolacao = new SOLID.LSP.Violation.ProcessadorTransacao();
+            
+            Console.WriteLine("Testando ContaCorrente:");
+            var contaCorrente1 = new SOLID.LSP.Violation.ContaCorrente();
+            contaCorrente1.Numero = "001";
+            contaCorrente1.Saldo = 1000m;
+            
+            try
+            {
+                processadorViolacao.ProcessarSaque(contaCorrente1, 500m);
+                Console.WriteLine("Saque OK - Saldo: R$ " + contaCorrente1.Saldo);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro: " + ex.Message);
+            }
+
+            Console.WriteLine("\nTestando ContaPoupanca (MESMO código):");
+            var contaPoupanca1 = new SOLID.LSP.Violation.ContaPoupanca();
+            contaPoupanca1.Numero = "002";
+            contaPoupanca1.Saldo = 1000m;
+            
+            try
+            {
+                // PROBLEMA: Mesmo código quebra com ContaPoupanca!
+                processadorViolacao.ProcessarSaque(contaPoupanca1, 500m);
+                Console.WriteLine("Saque OK - Saldo: R$ " + contaPoupanca1.Saldo);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro: " + ex.Message);
+            }
+            Console.WriteLine("PROBLEMA: Subclasse não pode substituir classe pai!");
+
+            Console.WriteLine("\n--- SOLUÇÃO DO LSP ---");
+            var processadorSolucao = new SOLID.LSP.Solution.ProcessadorTransacao();
+            
+            // Agora QUALQUER tipo de conta funciona com o MESMO código!
+            var contaCorrente2 = new SOLID.LSP.Solution.ContaCorrente();
+            contaCorrente2.Numero = "003";
+            contaCorrente2.Saldo = 1000m;
+            
+            var contaPoupanca2 = new SOLID.LSP.Solution.ContaPoupanca();
+            contaPoupanca2.Numero = "004";
+            contaPoupanca2.Saldo = 1000m;
+            
+            var contaInvestimento = new SOLID.LSP.Solution.ContaInvestimento();
+            contaInvestimento.Numero = "005";
+            contaInvestimento.Saldo = 1000m;
+
+            Console.WriteLine("Testando todos os tipos com MESMO código:");
+            processadorSolucao.ProcessarSaque(contaCorrente2, 300m);
+            processadorSolucao.ProcessarSaque(contaPoupanca2, 200m);  
+            processadorSolucao.ProcessarSaque(contaInvestimento, 150m);
+            
+            Console.WriteLine("VANTAGEM: Qualquer subclasse substitui a classe pai perfeitamente!");
         }
     }
 }
