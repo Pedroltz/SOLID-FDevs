@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using SOLID.SRP.Violation;
 using SOLID.SRP.Solution;
 using SOLID.OCP.Violation;
@@ -7,6 +8,8 @@ using SOLID.LSP.Violation;
 using SOLID.LSP.Solution;
 using SOLID.ISP.Violation;
 using SOLID.ISP.Solution;
+using SOLID.DIP.Violation;
+using SOLID.DIP.Solution;
 
 namespace SOLID
 {
@@ -31,6 +34,10 @@ namespace SOLID
             Console.WriteLine("\n\n4. ISP - Interface Segregation Principle");
             Console.WriteLine("=========================================");
             DemonstrateISP();
+
+            Console.WriteLine("\n\n5. DIP - Dependency Inversion Principle");
+            Console.WriteLine("=======================================");
+            DemonstrateDIP();
 
             Console.WriteLine("\nPressione qualquer tecla para sair...");
             Console.ReadKey();
@@ -220,6 +227,63 @@ namespace SOLID
             contaCompleta.CalcularRendimentoPoupanca();
             
             Console.WriteLine("VANTAGEM: Cada classe só implementa métodos que realmente usa!");
+        }
+
+        static void DemonstrateDIP()
+        {
+            Console.WriteLine("\n--- VIOLAÇÃO DO DIP ---");
+            Console.WriteLine("ProcessadorPagamento conhece diretamente PayPal, PicPay, etc:");
+            
+            var processadorViolacao = new ProcessadorPagamentoViolacao();
+            
+            processadorViolacao.ProcessarPagamento(100m, "paypal");
+            processadorViolacao.ProcessarPagamento(200m, "picpay");
+            processadorViolacao.ProcessarPagamento(300m, "cartao");
+            
+            try
+            {
+                // Tentando usar método que não existe
+                processadorViolacao.ProcessarPagamento(150m, "pix");
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine("ERRO: " + ex.Message);
+            }
+            
+            Console.WriteLine("PROBLEMA: Para adicionar PIX, preciso modificar a classe principal!");
+
+            Console.WriteLine("\n--- SOLUÇÃO DO DIP ---");
+            Console.WriteLine("ProcessadorPagamento depende apenas da interface:");
+            
+            // Configurando as dependências (Inversão de Controle)
+            var processadorSolucao = ConfiguradorPagamentos.CriarProcessador();
+            
+            Console.WriteLine("\nMétodos disponíveis:");
+            processadorSolucao.ListarMetodosDisponiveis();
+            
+            Console.WriteLine("\nProcessando pagamentos:");
+            processadorSolucao.ProcessarPagamento(100m, "PayPal");
+            processadorSolucao.ProcessarPagamento(200m, "PicPay");
+            processadorSolucao.ProcessarPagamento(300m, "Cartão de Crédito");
+            processadorSolucao.ProcessarPagamento(150m, "PIX"); // Novo método funciona!
+            
+            // Testando método inexistente
+            processadorSolucao.ProcessarPagamento(50m, "Bitcoin");
+            
+            Console.WriteLine("VANTAGEM: PIX foi adicionado sem modificar o processador principal!");
+            
+            Console.WriteLine("\nConfigurando processador customizado:");
+            // Posso criar configurações diferentes facilmente
+            var metodosCustomizados = new List<IProcessadorPagamento>
+            {
+                new SOLID.DIP.Solution.PayPal(),
+                new SOLID.DIP.Solution.PIX()
+            };
+            var processadorCustomizado = new ProcessadorPagamentoSolucao(metodosCustomizados);
+            
+            Console.WriteLine("Processador só com PayPal e PIX:");
+            processadorCustomizado.ListarMetodosDisponiveis();
+            processadorCustomizado.ProcessarPagamento(500m, "PIX");
         }
     }
 }
