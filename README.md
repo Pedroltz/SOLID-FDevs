@@ -24,19 +24,6 @@ SOLID/
 
 Cada princípio tem pasta **Violation** (como NÃO fazer) e **Solution** (como fazer certo).
 
-## 🚀 Como usar
-
-1. Abra no Visual Studio
-2. Execute o projeto (F5)
-3. Veja as demonstrações de cada princípio
-
-## 💡 Características
-
-- **Código simples** para iniciantes
-- **Comentários detalhados** explicando cada linha
-- **Analogias práticas** para facilitar o entendimento
-- **Exemplos financeiros** (contas, pagamentos, descontos)
-
 ## 🔍 Exemplos rápidos
 
 **SRP**: Em vez de uma classe fazer tudo, ter classes especializadas  
